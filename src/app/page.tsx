@@ -28,17 +28,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
-/**
- * FONT SETUP (add once in app/layout.tsx, not in this file):
- *
- * import { Space_Grotesk, Manrope } from "next/font/google";
- * const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
- * const body = Manrope({ subsets: ["latin"], variable: "--font-body" });
- * // then on <html className={`${display.variable} ${body.variable}`}>
- *
- * Falls back to system sans if not wired up.
- */
-
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -52,22 +41,22 @@ export default function LandingPage() {
       };
 
   const ormawaList = [
-    { name: "BEM", logo: "/logos/BEM.png", no: "01" },
-    { name: "DPM", logo: "/logos/DPM.png", no: "02" },
+    { name: "DPM", logo: "/logos/DPM.png", no: "01" },
+    { name: "BEM", logo: "/logos/BEM.png", no: "02" },
     { name: "HMMB", logo: "/logos/HMMB.png", no: "03" },
-    { name: "HME", logo: "/logos/HME.png", no: "04" },
-    { name: "HMTI", logo: "/logos/HMTI.png", no: "05" },
+    { name: "HMTI", logo: "/logos/HMTI.png", no: "04" },
+    { name: "HME", logo: "/logos/HME.png", no: "05" },
     { name: "HMM", logo: "/logos/HMM.png", no: "06" },
-    { name: "PEC", logo: "/logos/PEC.png", no: "07" },
-    { name: "LPM", logo: "/logos/LPM.png", no: "08" },
-    { name: "ENERGI", logo: "/logos/ENERGI.png", no: "09" },
-    { name: "PD-Elshaddai", logo: "/logos/EL-SHADAI.png", no: "10" },
-    { name: "IMMPB", logo: "/logos/IMMPB.png", no: "11" },
-    { name: "BLUG", logo: "/logos/BLUG.png", no: "12" },
-    { name: "REKAM", logo: "/logos/REKAM.png", no: "13" },
+    { name: "IMMPB", logo: "/logos/IMMPB.png", no: "07" },
+    { name: "PD-Elshaddai", logo: "/logos/EL-SHADAI.png", no: "08" },
+    { name: "BLUG", logo: "/logos/BLUG.png", no: "09" },
+    { name: "MAPALA", logo: "/logos/MAPALA.png", no: "10" },
+    { name: "PEC", logo: "/logos/PEC.png", no: "11" },
+    { name: "LPM", logo: "/logos/LPM.png", no: "12" },
+    { name: "KOP", logo: "/logos/KOP.png", no: "13" },
     { name: "KUAS", logo: "/logos/KUAS.png", no: "14" },
-    { name: "MAPALA", logo: "/logos/MAPALA.png", no: "15" },
-    { name: "KOP", logo: "/logos/KOP.png", no: "16" },
+    { name: "ENERGI", logo: "/logos/ENERGI.png", no: "15" },
+    { name: "REKAM", logo: "/logos/REKAM.png", no: "16" },
   ];
 
   const features = [
@@ -248,7 +237,6 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-14 pb-24 lg:pt-20 lg:pb-32">
-        {/* engineering-grid backdrop, subtle */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 opacity-[0.35]"
@@ -261,17 +249,14 @@ export default function LandingPage() {
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-14 items-start">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            
             {/* Left: headline */}
             <motion.div
               {...(reduceMotion ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } })}
               transition={{ duration: 0.6 }}
-              className="lg:col-span-7 relative"
+              className="lg:col-span-7 relative z-10"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--paper)] border border-[var(--line)] text-[var(--ink-soft)] text-xs font-bold tracking-[0.14em] uppercase mb-8">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--orange)]" />
-                GOPO 2026 · Grand Opening Ormawa Polibatam
-              </div>
 
               <h1 className="font-[family-name:var(--font-display)] text-5xl sm:text-6xl lg:text-[5.5rem] font-bold tracking-tight leading-[0.95] mb-7">
                 KAMU
@@ -292,13 +277,13 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-[var(--ink-soft)] text-lg leading-relaxed mb-9 max-w-lg">
-                16 ORMAWA, 1 kampus. Isi quiz singkat, dapatkan skor kecocokanmu ke tiap organisasi,
+                16 ORMAWA. Isi quiz singkat, dapatkan skor kecocokanmu ke tiap organisasi,
                 lalu langsung terhubung dengan pengurusnya.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/quiz">
-                  <button className="w-full sm:w-auto px-7 py-4 rounded-xl bg-[var(--orange)] text-white font-bold text-base shadow-[4px_4px_0_0_var(--navy)] hover:shadow-[2px_2px_0_0_var(--navy)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange)] focus-visible:ring-offset-2">
+                  <button className="w-full sm:w-auto px-7 py-4 rounded-xl bg-[var(--orange)] text-white font-bold text-base shadow-[4px_4px_0_0_var(--navy)] hover:shadow-[2px_2px_0_0_var(--navy)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange)] focus-visible:ring-offset-2">
                     Mulai Quiz Sekarang
                     <ArrowRight className="w-5 h-5" />
                   </button>
@@ -312,43 +297,25 @@ export default function LandingPage() {
               </div>
             </motion.div>
 
-            {/* Right: signature match-stamp */}
-            <motion.div
-              {...(reduceMotion ? {} : { initial: { opacity: 0, scale: 0.9, rotate: -8 }, animate: { opacity: 1, scale: 1, rotate: -6 } })}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="lg:col-span-5 flex justify-center lg:justify-end lg:pt-4"
-            >
-              <div className="relative w-64 h-64 sm:w-72 sm:h-72 shrink-0 -rotate-6">
-                <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[4px_6px_0_var(--line)]">
-                  <circle cx="100" cy="100" r="96" fill="var(--paper)" stroke="var(--ink)" strokeWidth="2.5" strokeDasharray="6 5" />
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="var(--line)" strokeWidth="1.5" />
-                  {/* gauge arc */}
-                  <path
-                    d="M 40 130 A 70 70 0 1 1 160 130"
-                    fill="none"
-                    stroke="var(--line)"
-                    strokeWidth="14"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M 40 130 A 70 70 0 1 1 148 148"
-                    fill="none"
-                    stroke="var(--orange)"
-                    strokeWidth="14"
-                    strokeLinecap="round"
-                  />
-                  <text x="100" y="98" textAnchor="middle" className="font-[family-name:var(--font-display)]" fontSize="40" fontWeight="700" fill="var(--ink)">
-                    92%
-                  </text>
-                  <text x="100" y="122" textAnchor="middle" fontSize="11" fontWeight="700" letterSpacing="2" fill="var(--ink-soft)">
-                    MATCH SCORE
-                  </text>
-                </svg>
-                <div className="absolute -top-3 -right-3 bg-[var(--navy)] text-[var(--bg)] text-[10px] font-bold tracking-widest px-3 py-1.5 rounded-full rotate-6 shadow-sm">
-                  CONTOH HASIL
-                </div>
-              </div>
-            </motion.div>
+        <motion.div
+  {...(reduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, scale: 0.9 },
+        animate: { opacity: 1, scale: 1 },
+      })}
+  transition={{ duration: 0.8, delay: 0.2 }}
+  className="lg:col-span-5 flex justify-center items-center"
+>
+  <div className="w-full">
+    <img
+      src="/images/sinergisasi2.png"
+      alt="Ilustrasi Hero Sinergisasi"
+      className="w-full h-auto object-contain drop-shadow-2xl scale-110 lg:scale-125 xl:scale-135"
+    />
+  </div>
+</motion.div>
+
           </div>
         </div>
       </section>
@@ -374,7 +341,7 @@ export default function LandingPage() {
                 }`}
               >
                 <span className="absolute top-1.5 left-2 text-[9px] font-bold tracking-widest text-[var(--ink-soft)]">
-                  №{item.no}
+                  {item.no}
                 </span>
                 <div className="relative w-10 h-10 mb-2 flex items-center justify-center">
                   <Image
@@ -438,7 +405,7 @@ export default function LandingPage() {
 
                 <Link href={feature.link}>
                   <span className="inline-flex items-center gap-2 text-[var(--orange)] font-bold text-sm group-hover:gap-3 transition-all">
-                    Pelajari <ChevronRight className="w-4 h-4" />
+                    GASSS <ChevronRight className="w-4 h-4" />
                   </span>
                 </Link>
               </motion.div>
@@ -563,7 +530,7 @@ export default function LandingPage() {
                 GOPO 2026
               </span>
               <p className="leading-relaxed text-xs">
-                Grand Opening Ormawa Polibatam 2026. Sarana interaktif eksplorasi organisasi mahasiswa.
+                Grand Opening Pengaderan Ormawa 2026. Sarana interaktif eksplorasi organisasi mahasiswa.
               </p>
             </div>
             <div>
@@ -599,7 +566,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-white/10 pt-8 text-center text-xs text-white/40">
-            <p>© 2026 GOPO - Grand Opening Ormawa Polibatam. PSDM BEM Polibatam.</p>
+            <p>© 2026 GOPO - Grand Opening Pengaderan Ormawa. PSDM BEM Polibatam X Batam Linux User Group.</p>
           </div>
         </div>
       </footer>
