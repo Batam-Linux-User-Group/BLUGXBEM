@@ -424,7 +424,7 @@ export const ORMAWA_LIST: Ormawa[] = [
     tiktok: "@batamlinuxusergroup",
     youtube: "@batamlinux9734",
     googleSite: "https://blug.polibatam.ac.id/",
-    contactPerson: "+62 813-6497-9971 (Nandita Maharani)"
+    contactPerson: "082387593452 (Terra)"
   },
   {
     id: "rekam",
