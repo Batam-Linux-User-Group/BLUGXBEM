@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -15,6 +15,9 @@ import {
   Target,
   ChevronRight,
   Sparkles,
+  Loader2,
+  Search,
+  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -116,26 +119,106 @@ export default function ResultPage() {
   const reduceMotion = useReducedMotion();
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [fullOrmawaData, setFullOrmawaData] = useState<Record<string, Ormawa>>({});
+  const [participant, setParticipant] = useState<{ nama: string; nim: string; jurusan: string } | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error" | "duplicate">("idle");
+  const hasAutoSubmitted = useRef(false);
 
-  useEffect(() => {
-    const savedAnswers = sessionStorage.getItem("quizAnswers");
+  // ============================================
+  // CEK DUPLICATE DI SESSION STORAGE
+  // ============================================
+  const checkIfAlreadySubmitted = (nim: string): boolean => {
+    const submittedNims = JSON.parse(sessionStorage.getItem("submittedNims") || "[]");
+    return submittedNims.includes(nim);
+  };
 
-    if (!savedAnswers) {
-      router.push("/quiz");
+  const markAsSubmitted = (nim: string) => {
+    const submittedNims = JSON.parse(sessionStorage.getItem("submittedNims") || "[]");
+    if (!submittedNims.includes(nim)) {
+      submittedNims.push(nim);
+      sessionStorage.setItem("submittedNims", JSON.stringify(submittedNims));
+    }
+  };
+
+  // ============================================
+  // AUTO SUBMIT KE GOOGLE SHEETS
+  // ============================================
+  const submitToGoogleSheets = async () => {
+    if (!participant || matches.length === 0 || isSubmitting) return;
+
+    // CEK DUPLICATE
+    if (checkIfAlreadySubmitted(participant.nim)) {
+      setSubmitStatus("duplicate");
       return;
     }
 
-    let parsedAnswers;
+    setIsSubmitting(true);
+    setSubmitStatus("idle");
+
     try {
-      parsedAnswers = JSON.parse(savedAnswers);
-    } catch {
+      const answersData = sessionStorage.getItem("quizAnswers");
+      const answers = JSON.parse(answersData || "[]");
+
+      const response = await fetch("/api/quiz/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          participant,
+          answers,
+          results: matches.slice(0, 3),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal menyimpan data");
+      }
+
+      // Tandai NIM sudah submit
+      markAsSubmitted(participant.nim);
+      setSubmitStatus("success");
+      
+      // Clear session setelah sukses
+      sessionStorage.removeItem("quizParticipant");
+      sessionStorage.removeItem("quizAnswers");
+    } catch (error) {
+      console.error("Submit error:", error);
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ============================================
+  // EFFECT: LOAD DATA & AUTO SUBMIT
+  // ============================================
+  useEffect(() => {
+    const participantData = sessionStorage.getItem("quizParticipant");
+    const answersData = sessionStorage.getItem("quizAnswers");
+
+    if (!participantData || !answersData) {
       router.push("/quiz");
       return;
     }
 
-    const timer = setTimeout(() => {
-      const results = calculateMatches(parsedAnswers, ORMAWA_LIST);
+    try {
+      const parsedParticipant = JSON.parse(participantData);
+      const parsedAnswers = JSON.parse(answersData);
+
+      if (!parsedParticipant.nama || !parsedParticipant.jurusan || parsedAnswers.length === 0) {
+        router.push("/quiz");
+        return;
+      }
+
+      setParticipant(parsedParticipant);
+
+      const results = calculateMatches(
+        parsedAnswers,
+        ORMAWA_LIST,
+        parsedParticipant.jurusan
+      );
       setMatches(results);
 
       const ormawaMap: Record<string, Ormawa> = {};
@@ -145,10 +228,27 @@ export default function ResultPage() {
       setFullOrmawaData(ormawaMap);
 
       setIsLoading(false);
-    }, 1400);
-
-    return () => clearTimeout(timer);
+    } catch (error) {
+      console.error("Error loading results:", error);
+      router.push("/quiz");
+    }
   }, [router]);
+
+  // ============================================
+  // EFFECT: AUTO SUBMIT SETELAH DATA LOAD
+  // ============================================
+  useEffect(() => {
+    if (!isLoading && matches.length > 0 && participant && !hasAutoSubmitted.current) {
+      hasAutoSubmitted.current = true;
+      
+      // Delay 1.5 detik biar user lihat hasil dulu
+      const timer = setTimeout(() => {
+        submitToGoogleSheets();
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, matches, participant]);
 
   // ============================================
   // LOADING
@@ -171,17 +271,6 @@ export default function ResultPage() {
           <p className="text-[var(--ink-soft)] text-sm mb-6">
             Mencocokkan dengan {ORMAWA_LIST.length} organisasi
           </p>
-          <div className="space-y-2.5 text-left">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0.3 }}
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.2 }}
-                className="h-12 bg-[var(--paper)] border border-[var(--line)] rounded-xl"
-              />
-            ))}
-          </div>
         </div>
       </main>
     );
@@ -218,6 +307,7 @@ export default function ResultPage() {
           <button
             onClick={() => {
               sessionStorage.removeItem("quizAnswers");
+              sessionStorage.removeItem("quizParticipant");
               router.push("/quiz");
             }}
             className="w-full bg-[var(--orange)] text-white font-bold py-3 px-4 rounded-xl hover:bg-[var(--orange-dark)] transition-colors text-sm"
@@ -230,7 +320,7 @@ export default function ResultPage() {
   }
 
   // ============================================
-  // RENDER RESULT
+  // RENDER
   // ============================================
   return (
     <main
@@ -262,20 +352,17 @@ export default function ResultPage() {
           className="lg:col-span-3 lg:sticky lg:top-20"
         >
           <div className="relative bg-[var(--navy)] rounded-2xl p-5 lg:p-6 text-white overflow-hidden shadow-lg">
-            {/* Background decoration */}
             <div
               aria-hidden
               className="pointer-events-none absolute top-0 right-0 w-40 h-40 bg-[var(--orange)]/20 rounded-full -mr-16 -mt-16 blur-2xl"
             />
 
             <div className="relative z-10">
-              {/* Badge */}
               <div className="inline-flex items-center gap-1.5 bg-[var(--orange)] px-3 py-1.5 rounded-full text-xs font-bold mb-4">
                 <Trophy className="w-3 h-3" />
                 #1 UNTUKMU
               </div>
 
-              {/* Header: Logo + Nama */}
               <div className="flex items-start gap-3 mb-4">
                 <div className="p-1 bg-white rounded-xl shrink-0">
                   <OrmawaLogo ormawa={topOrmawa} size={52} />
@@ -288,12 +375,10 @@ export default function ResultPage() {
                 </div>
               </div>
 
-              {/* Deskripsi */}
               <p className="text-white/75 mb-5 leading-relaxed text-sm line-clamp-3">
                 {topOrmawa.description}
               </p>
 
-              {/* Score */}
               <div className="flex items-center gap-3 mb-5 p-3 bg-white/5 rounded-xl">
                 <div className="font-[family-name:var(--font-display)] text-4xl font-bold text-[var(--orange)]">
                   {topMatch.score}%
@@ -304,7 +389,6 @@ export default function ResultPage() {
                 </div>
               </div>
 
-              {/* SKILLS */}
               {topMatch.matchedSkills.length > 0 && (
                 <div className="mb-5">
                   <div className="text-xs text-white/60 mb-2 flex items-center gap-1.5">
@@ -329,18 +413,16 @@ export default function ResultPage() {
                 </div>
               )}
 
-              {/* ACTIONS */}
               <div className="space-y-2.5">
                 <Link
                   href={`/explore/${topOrmawa.id}`}
                   className="flex items-center justify-center gap-2 bg-[var(--orange)] text-white font-bold py-3 px-4 rounded-xl hover:bg-[var(--orange-dark)] transition-colors text-sm w-full"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Search className="w-4 h-4" />
                   Lihat Detail
                   <ChevronRight className="w-4 h-4" />
                 </Link>
 
-                {/* Social Media Buttons */}
                 <div className="grid grid-cols-2 gap-2">
                   {topOrmawa.instagram && (
                     <a
@@ -383,7 +465,6 @@ export default function ResultPage() {
         <div className="lg:col-span-2 mt-5 lg:mt-0 space-y-3">
           {/* #2 and #3 - GRID */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-3">
-            {/* #2 */}
             {secondMatch && secondOrmawa && (
               <motion.div
                 initial={reduceMotion ? {} : { opacity: 0, y: 16 }}
@@ -392,7 +473,6 @@ export default function ResultPage() {
                 className="bg-[var(--paper)] rounded-xl p-4 border-2 border-[var(--line)] hover:border-[var(--silver)] transition-colors"
               >
                 <div className="flex flex-col gap-3">
-                  {/* Row: Logo + Badge + Nama */}
                   <div className="flex items-start gap-3">
                     <OrmawaLogo ormawa={secondOrmawa} size={44} />
                     <div className="flex-1 min-w-0">
@@ -408,16 +488,10 @@ export default function ResultPage() {
                       </h3>
                     </div>
                   </div>
-
-                  {/* Deskripsi */}
                   <p className="text-xs text-[var(--ink-soft)] line-clamp-2">
                     {secondOrmawa.description}
                   </p>
-
-                  {/* Score Bar */}
                   <ScoreBar score={secondMatch.score} delay={0.25} color="bg-[var(--silver)]" />
-
-                  {/* Link Detail */}
                   <Link
                     href={`/explore/${secondMatch.ormawaId}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-[var(--orange)] hover:text-[var(--orange-dark)] self-start"
@@ -428,7 +502,6 @@ export default function ResultPage() {
               </motion.div>
             )}
 
-            {/* #3 */}
             {thirdMatch && thirdOrmawa && (
               <motion.div
                 initial={reduceMotion ? {} : { opacity: 0, y: 16 }}
@@ -437,7 +510,6 @@ export default function ResultPage() {
                 className="bg-[var(--paper)] rounded-xl p-4 border-2 border-[var(--line)] hover:border-[var(--orange)]/50 transition-colors"
               >
                 <div className="flex flex-col gap-3">
-                  {/* Row: Logo + Badge + Nama */}
                   <div className="flex items-start gap-3">
                     <OrmawaLogo ormawa={thirdOrmawa} size={44} />
                     <div className="flex-1 min-w-0">
@@ -453,16 +525,10 @@ export default function ResultPage() {
                       </h3>
                     </div>
                   </div>
-
-                  {/* Deskripsi */}
                   <p className="text-xs text-[var(--ink-soft)] line-clamp-2">
                     {thirdOrmawa.description}
                   </p>
-
-                  {/* Score Bar */}
                   <ScoreBar score={thirdMatch.score} delay={0.3} />
-
-                  {/* Link Detail */}
                   <Link
                     href={`/explore/${thirdMatch.ormawaId}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-[var(--orange)] hover:text-[var(--orange-dark)] self-start"
@@ -526,16 +592,60 @@ export default function ResultPage() {
             </motion.div>
           )}
 
-          {/* FOOTER */}
+          {/* FOOTER - STATUS SUBMIT */}
           <motion.div
             initial={reduceMotion ? {} : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.35 }}
             className="space-y-3 pt-1"
           >
+            {/* Status Submit */}
+            <div className="bg-[var(--paper)] rounded-xl p-4 border-2 border-[var(--line)]">
+              {submitStatus === "idle" && isSubmitting && (
+                <div className="flex items-center justify-center gap-3 text-[var(--ink-soft)]">
+                  <Loader2 className="w-5 h-5 animate-spin text-[var(--orange)]" />
+                  <span className="text-sm font-medium">Menyimpan hasil...</span>
+                </div>
+              )}
+
+              {submitStatus === "success" && (
+                <div className="flex items-center justify-center gap-3 text-green-600">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="text-sm font-medium">✅ Hasil berhasil disimpan!</span>
+                </div>
+              )}
+
+              {submitStatus === "duplicate" && (
+                <div className="flex items-center justify-center gap-3 text-amber-600">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    ⚠️ NIM {participant?.nim} sudah pernah mengikuti quiz ini.
+                  </span>
+                </div>
+              )}
+
+              {submitStatus === "error" && (
+                <div className="flex items-center justify-center gap-3 text-red-500">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    ❌ Gagal menyimpan data. Silakan coba lagi.
+                  </span>
+                </div>
+              )}
+
+              {submitStatus === "idle" && !isSubmitting && (
+                <div className="flex items-center justify-center gap-3 text-[var(--ink-soft)]">
+                  <Sparkles className="w-5 h-5 text-[var(--orange)]" />
+                  <span className="text-sm font-medium">Menyimpan hasil secara otomatis...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Tombol Ulangi Kuis (tetap ada) */}
             <button
               onClick={() => {
                 sessionStorage.removeItem("quizAnswers");
+                sessionStorage.removeItem("quizParticipant");
                 router.push("/quiz");
               }}
               className="w-full bg-[var(--paper)] text-[var(--ink)] font-bold py-3 px-4 rounded-xl border-2 border-[var(--line)] hover:border-[var(--orange)] transition-all flex items-center justify-center gap-2 text-sm"
