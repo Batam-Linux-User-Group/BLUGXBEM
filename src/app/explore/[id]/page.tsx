@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, notFound } from "next/navigation";
@@ -15,6 +15,14 @@ import {
   Sparkles,
   ImageIcon,
   X,
+  Trophy,
+  Users,
+  Music2,
+  PlayCircle,
+  Link2,
+  Glasses,
+  Eye,
+  Search,
 } from "lucide-react";
 
 import { ORMAWA_LIST } from "@/data/ormawa";
@@ -28,6 +36,18 @@ function getGoogleDriveImageUrl(url: string): string {
     }
   }
   return url;
+}
+
+// Helper untuk menormalkan nomor WA ke format internasional.
+// Data kontak di ORMAWA_LIST tidak konsisten: sebagian pakai "+62...",
+// sebagian pakai awalan "0..." — kalau awalan "0" langsung di-strip jadi
+// digit doang, link wa.me akan salah format dan tidak terbuka dengan benar.
+function getWhatsAppNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("0")) {
+    return `62${digits.slice(1)}`;
+  }
+  return digits;
 }
 
 const themeVars = {
@@ -49,12 +69,18 @@ export default function OrmawaDetailPage() {
   const reduceMotion = useReducedMotion();
   const [logoError, setLogoError] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
 
   const ormawa = ORMAWA_LIST.find((o) => o.id === params.id);
 
-  // Lock body scroll + allow Esc to close while lightbox is open
+  // Lock body scroll, allow Esc to close, pindahkan fokus ke tombol tutup saat
+  // lightbox terbuka, dan kembalikan fokus ke thumbnail yang tadi diklik saat ditutup.
   useEffect(() => {
     if (!selectedImage) return;
+
+    lastFocusedRef.current = document.activeElement as HTMLElement;
+    closeButtonRef.current?.focus();
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -67,6 +93,7 @@ export default function OrmawaDetailPage() {
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      lastFocusedRef.current?.focus();
     };
   }, [selectedImage]);
 
@@ -75,9 +102,22 @@ export default function OrmawaDetailPage() {
   }
 
   const hasFocusAreas = !!ormawa.focusAreas?.length;
-  const hasContact = !!(ormawa.contactPerson || ormawa.instagram || ormawa.googleSite);
+  const hasDepartments = !!ormawa.departments?.length;
+  const hasContact = !!(
+    ormawa.contactPerson ||
+    ormawa.instagram ||
+    ormawa.tiktok ||
+    ormawa.youtube ||
+    ormawa.googleSite ||
+    ormawa.linktree
+  );
   const hasPrograms = !!ormawa.flagshipPrograms?.length;
-  const hasGallery = !!ormawa.gallery?.length;
+  const hasAchievements = !!ormawa.achievements?.length;
+  const hasVideo = !!ormawa.video;
+
+  // Fallback: kalau "gallery" kosong tapi ada data lama di "photos", tetap tampilkan.
+  const galleryImages = ormawa.gallery?.length ? ormawa.gallery : ormawa.photos;
+  const hasGallery = !!galleryImages?.length;
 
   return (
     <main
@@ -143,13 +183,49 @@ export default function OrmawaDetailPage() {
               <p className="text-sm sm:text-base text-[var(--ink-soft)] leading-relaxed">
                 {ormawa.description}
               </p>
+
+              {hasVideo && (
+                <a
+                  href={ormawa.video}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-5 text-sm font-bold text-[var(--orange)] hover:text-[var(--orange-dark)] transition-colors"
+                >
+                  <PlayCircle className="w-5 h-5" />
+                  Tonton Video Profil
+                </a>
+              )}
             </div>
           </div>
         </motion.div>
 
+        {/* Prestasi — ditaruh menonjol tepat di bawah hero sebagai social proof */}
+        {hasAchievements && (
+          <motion.div
+            initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-[var(--orange)]/5 rounded-2xl p-5 sm:p-6 border border-[var(--orange)]/20"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Trophy className="w-5 h-5 text-[var(--orange)]" />
+              <h3 className="font-[family-name:var(--font-display)] font-bold text-base text-[var(--ink)]">
+                Prestasi
+              </h3>
+            </div>
+            <ul className="space-y-2">
+              {ormawa.achievements?.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-sm text-[var(--ink-soft)]">
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+
         {/* Layout Grid: Mobile (Stack), Desktop (Sidebar + Main Content) */}
         <div className="grid md:grid-cols-12 gap-6">
-          {/* 2. Sidebar (Fokus & Kontak) - Order 2 di Mobile, Order 1 di Desktop */}
+          {/* 2. Sidebar (Fokus, Departemen & Kontak) - Order 2 di Mobile, Order 1 di Desktop */}
           <div className="md:col-span-4 space-y-6 order-2 md:order-1">
             {/* Fokus Utama */}
             {hasFocusAreas && (
@@ -166,7 +242,7 @@ export default function OrmawaDetailPage() {
                   </h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {ormawa.focusAreas?.map((area, idx) => (
+                  {ormawa.focusAreas.map((area, idx) => (
                     <span
                       key={idx}
                       className="text-xs px-3 py-1.5 bg-[var(--bg)] text-[var(--ink-soft)] rounded-lg border border-[var(--line)] font-medium"
@@ -178,7 +254,34 @@ export default function OrmawaDetailPage() {
               </motion.div>
             )}
 
-            {/* Kontak */}
+            {/* Departemen / Divisi */}
+            {hasDepartments && (
+              <motion.div
+                initial={reduceMotion ? {} : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 }}
+                className="bg-[var(--paper)] rounded-2xl p-5 sm:p-6 border border-[var(--line)]"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="w-5 h-5 text-[var(--orange)]" />
+                  <h3 className="font-[family-name:var(--font-display)] font-bold text-base">
+                    Departemen
+                  </h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {ormawa.departments?.map((dept, idx) => (
+                    <span
+                      key={idx}
+                      className="text-xs px-3 py-1.5 bg-[var(--bg)] text-[var(--ink-soft)] rounded-lg border border-[var(--line)] font-medium"
+                    >
+                      {dept}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Kontak & Sosial Media */}
             {hasContact && (
               <motion.div
                 initial={reduceMotion ? {} : { opacity: 0, x: -20 }}
@@ -195,7 +298,7 @@ export default function OrmawaDetailPage() {
                 <div className="space-y-4">
                   {ormawa.contactPerson && (
                     <a
-                      href={`https://wa.me/${ormawa.contactPerson.replace(/\D/g, "")}`}
+                      href={`https://wa.me/${getWhatsAppNumber(ormawa.contactPerson)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 text-sm text-[var(--ink-soft)] hover:text-[var(--orange)] transition-colors group"
@@ -219,6 +322,36 @@ export default function OrmawaDetailPage() {
                       <span className="font-medium">{ormawa.instagram}</span>
                     </a>
                   )}
+                  {ormawa.tiktok && (
+                    <a
+                      href={`https://tiktok.com/${ormawa.tiktok}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-[var(--bg)] border border-[var(--line)] flex items-center justify-center group-hover:border-[var(--ink)] group-hover:bg-[var(--ink)]/5 transition-colors">
+                        <Music2 className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">{ormawa.tiktok}</span>
+                    </a>
+                  )}
+                  {ormawa.youtube && (
+                    <a
+                      href={
+                        ormawa.youtube.startsWith("http")
+                          ? ormawa.youtube
+                          : `https://youtube.com/${ormawa.youtube}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 text-sm text-[var(--ink-soft)] hover:text-red-600 transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-[var(--bg)] border border-[var(--line)] flex items-center justify-center group-hover:border-red-500 group-hover:bg-red-50 transition-colors">
+                        <PlayCircle className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">{ormawa.youtube}</span>
+                    </a>
+                  )}
                   {ormawa.googleSite && (
                     <a
                       href={ormawa.googleSite}
@@ -230,6 +363,19 @@ export default function OrmawaDetailPage() {
                         <Globe className="w-4 h-4" />
                       </div>
                       <span className="font-medium">Website Resmi</span>
+                    </a>
+                  )}
+                  {ormawa.linktree && (
+                    <a
+                      href={ormawa.linktree}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 text-sm text-[var(--ink-soft)] hover:text-emerald-600 transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-[var(--bg)] border border-[var(--line)] flex items-center justify-center group-hover:border-emerald-500 group-hover:bg-emerald-50 transition-colors">
+                        <Link2 className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">Linktree</span>
                     </a>
                   )}
                 </div>
@@ -254,7 +400,7 @@ export default function OrmawaDetailPage() {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {ormawa.flagshipPrograms?.map((proker, idx) => {
+                  {ormawa.flagshipPrograms.map((proker, idx) => {
                     const [title, ...descParts] = proker.split(" - ");
                     const desc = descParts.join(" - ");
 
@@ -298,7 +444,7 @@ export default function OrmawaDetailPage() {
                   </h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {ormawa.gallery?.map((imgSrc, idx) => {
+                  {galleryImages?.map((imgSrc, idx) => {
                     const parsedSrc = getGoogleDriveImageUrl(imgSrc);
 
                     return (
@@ -318,7 +464,7 @@ export default function OrmawaDetailPage() {
                           loading="lazy"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                          <Sparkles className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300" />
+                          <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300" />
                         </div>
                       </button>
                     );
@@ -348,7 +494,7 @@ export default function OrmawaDetailPage() {
                 href="/quiz"
                 className="inline-flex items-center gap-2 bg-[var(--orange)] hover:bg-[var(--orange-dark)] text-white font-bold py-3 px-6 sm:px-8 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10 shadow-md shadow-[var(--orange)]/20"
               >
-                <Sparkles className="w-5 h-5" />
+                <Search className="w-5 h-5" />
                 Mulai Kuis Kecocokan
               </Link>
             </motion.div>
@@ -377,8 +523,9 @@ export default function OrmawaDetailPage() {
               onClick={(e) => e.stopPropagation()} // Mencegah modal tertutup saat klik area gambar
             >
               <button
+                ref={closeButtonRef}
                 onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 sm:top-2 sm:-right-12 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+                className="absolute -top-12 right-0 sm:top-2 sm:-right-12 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 aria-label="Tutup"
               >
                 <X className="w-6 h-6" />

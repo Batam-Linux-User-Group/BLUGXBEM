@@ -80,7 +80,7 @@ export const QUESTIONS: Question[] = [
   },
 
   // ============================================================
-  // LAYER 2: SKILL & KEMAMPUAN (6 Pertanyaan)
+  // LAYER 2: SKILL & KEMAMPUAN (7 Pertanyaan)
   // ============================================================
 
   {
@@ -153,6 +153,18 @@ export const QUESTIONS: Question[] = [
       { text: "Cukup, bisa memahami tapi kesulitan berbicara", score: 3 },
       { text: "Kurang, hanya bisa beberapa kata dasar", score: 2 },
       { text: "Saya tidak bisa berbahasa Inggris", score: 1 }
+    ]
+  },
+  {
+    id: "q12b",
+    text: "Seberapa mahir kamu dalam mendesain visual (poster, feed sosial media, logo, dll)?",
+    category: "design",
+    options: [
+      { text: "Sangat mahir, percaya diri mendesain dari nol pakai tools desain (Canva, Photoshop, Illustrator, dll)", score: 5 },
+      { text: "Cukup mahir, bisa membuat desain sederhana yang enak dilihat", score: 4 },
+      { text: "Bisa menggunakan template dan memodifikasinya sedikit", score: 3 },
+      { text: "Kurang mahir, masih perlu banyak belajar dasar desain", score: 2 },
+      { text: "Saya tidak tertarik dan tidak bisa mendesain sama sekali", score: 1 }
     ]
   },
 

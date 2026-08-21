@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import {
+  AlertCircle,
   Trophy,
   Medal,
   Award,
@@ -13,7 +14,7 @@ import {
   Globe,
   Target,
   ChevronRight,
-  AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,7 +23,9 @@ import { ORMAWA_LIST } from "@/data/ormawa";
 import { MatchResult } from "@/types/quiz";
 import { Ormawa } from "@/types/ormawa";
 
-// Logo component with fallback
+// ============================================
+// LOGO COMPONENT
+// ============================================
 function OrmawaLogo({ ormawa, size = 48 }: { ormawa?: Ormawa; size?: number }) {
   const [failed, setFailed] = useState(false);
   const initials = ormawa?.shortName?.substring(0, 2).toUpperCase() ?? "??";
@@ -36,8 +39,7 @@ function OrmawaLogo({ ormawa, size = 48 }: { ormawa?: Ormawa; size?: number }) {
         <Image
           src={ormawa.logo}
           alt={`Logo ${ormawa.name}`}
-          width={size}
-          height={size}
+          fill
           className="object-contain p-1.5"
           onError={() => setFailed(true)}
         />
@@ -53,7 +55,9 @@ function OrmawaLogo({ ormawa, size = 48 }: { ormawa?: Ormawa; size?: number }) {
   );
 }
 
-// Reusable score progress bar with a11y
+// ============================================
+// SCORE BAR
+// ============================================
 function ScoreBar({
   score,
   delay,
@@ -67,7 +71,7 @@ function ScoreBar({
   return (
     <div className="flex items-center gap-2">
       <div
-        className="flex-1 h-2 bg-[var(--bg)] border border-[var(--line)] rounded-full overflow-hidden"
+        className="flex-1 h-1.5 bg-[var(--bg)] border border-[var(--line)] rounded-full overflow-hidden"
         role="progressbar"
         aria-valuenow={score}
         aria-valuemin={0}
@@ -87,6 +91,9 @@ function ScoreBar({
   );
 }
 
+// ============================================
+// THEME
+// ============================================
 const themeVars = {
   "--bg": "#FAF9F4",
   "--ink": "#15140F",
@@ -101,6 +108,9 @@ const themeVars = {
   "--font-body": "var(--font-body, 'Manrope'), sans-serif",
 } as React.CSSProperties;
 
+// ============================================
+// MAIN COMPONENT
+// ============================================
 export default function ResultPage() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
@@ -140,7 +150,9 @@ export default function ResultPage() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  // ---------- Loading state ----------
+  // ============================================
+  // LOADING
+  // ============================================
   if (isLoading) {
     return (
       <main
@@ -159,8 +171,6 @@ export default function ResultPage() {
           <p className="text-[var(--ink-soft)] text-sm mb-6">
             Mencocokkan dengan {ORMAWA_LIST.length} organisasi
           </p>
-
-          {/* Skeleton preview so loading doesn't feel like a dead end */}
           <div className="space-y-2.5 text-left">
             {[0, 1, 2].map((i) => (
               <motion.div
@@ -186,7 +196,9 @@ export default function ResultPage() {
   const secondOrmawa = fullOrmawaData[secondMatch?.ormawaId];
   const thirdOrmawa = fullOrmawaData[thirdMatch?.ormawaId];
 
-  // ---------- Empty / error state ----------
+  // ============================================
+  // EMPTY
+  // ============================================
   if (!topMatch || !topOrmawa) {
     return (
       <main
@@ -217,12 +229,15 @@ export default function ResultPage() {
     );
   }
 
+  // ============================================
+  // RENDER RESULT
+  // ============================================
   return (
     <main
       style={themeVars}
       className="min-h-screen bg-[var(--bg)] text-[var(--ink)] font-[family-name:var(--font-body)] pb-12"
     >
-      {/* Header */}
+      {/* HEADER */}
       <div className="sticky top-0 z-50 bg-[var(--bg)]/95 backdrop-blur-md border-b border-[var(--line)]">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link
@@ -238,24 +253,29 @@ export default function ResultPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 lg:grid lg:grid-cols-5 lg:gap-6 lg:items-start">
-        {/* ---------- Left column: hero top match ---------- */}
+        {/* ==========================================
+            LEFT: TOP MATCH
+            ========================================== */}
         <motion.div
           initial={reduceMotion ? {} : { opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           className="lg:col-span-3 lg:sticky lg:top-20"
         >
           <div className="relative bg-[var(--navy)] rounded-2xl p-5 lg:p-6 text-white overflow-hidden shadow-lg">
+            {/* Background decoration */}
             <div
               aria-hidden
               className="pointer-events-none absolute top-0 right-0 w-40 h-40 bg-[var(--orange)]/20 rounded-full -mr-16 -mt-16 blur-2xl"
             />
 
             <div className="relative z-10">
+              {/* Badge */}
               <div className="inline-flex items-center gap-1.5 bg-[var(--orange)] px-3 py-1.5 rounded-full text-xs font-bold mb-4">
                 <Trophy className="w-3 h-3" />
                 #1 UNTUKMU
               </div>
 
+              {/* Header: Logo + Nama */}
               <div className="flex items-start gap-3 mb-4">
                 <div className="p-1 bg-white rounded-xl shrink-0">
                   <OrmawaLogo ormawa={topOrmawa} size={52} />
@@ -268,7 +288,10 @@ export default function ResultPage() {
                 </div>
               </div>
 
-              <p className="text-white/75 mb-5 leading-relaxed text-sm">{topOrmawa.description}</p>
+              {/* Deskripsi */}
+              <p className="text-white/75 mb-5 leading-relaxed text-sm line-clamp-3">
+                {topOrmawa.description}
+              </p>
 
               {/* Score */}
               <div className="flex items-center gap-3 mb-5 p-3 bg-white/5 rounded-xl">
@@ -281,7 +304,7 @@ export default function ResultPage() {
                 </div>
               </div>
 
-              {/* Matched Skills */}
+              {/* SKILLS */}
               {topMatch.matchedSkills.length > 0 && (
                 <div className="mb-5">
                   <div className="text-xs text-white/60 mb-2 flex items-center gap-1.5">
@@ -290,12 +313,15 @@ export default function ResultPage() {
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {topMatch.matchedSkills.slice(0, 4).map((skill, idx) => (
-                      <span key={idx} className="bg-white/10 px-2.5 py-1 rounded-full text-xs font-medium">
+                      <span
+                        key={idx}
+                        className="bg-white/10 px-2.5 py-1 rounded-full text-xs font-medium border border-white/5"
+                      >
                         {skill}
                       </span>
                     ))}
                     {topMatch.matchedSkills.length > 4 && (
-                      <span className="bg-white/10 px-2.5 py-1 rounded-full text-xs">
+                      <span className="bg-white/10 px-2.5 py-1 rounded-full text-xs border border-white/5">
                         +{topMatch.matchedSkills.length - 4} lainnya
                       </span>
                     )}
@@ -303,128 +329,152 @@ export default function ResultPage() {
                 </div>
               )}
 
-              {/* Actions */}
+              {/* ACTIONS */}
               <div className="space-y-2.5">
                 <Link
                   href={`/explore/${topOrmawa.id}`}
-                  className="flex items-center justify-center gap-2 bg-[var(--orange)] text-white font-bold py-3 px-4 rounded-xl hover:bg-[var(--orange-dark)] transition-colors text-sm"
+                  className="flex items-center justify-center gap-2 bg-[var(--orange)] text-white font-bold py-3 px-4 rounded-xl hover:bg-[var(--orange-dark)] transition-colors text-sm w-full"
                 >
+                  <Sparkles className="w-4 h-4" />
                   Lihat Detail
                   <ChevronRight className="w-4 h-4" />
                 </Link>
 
-                {(topOrmawa.instagram || topOrmawa.googleSite) && (
-                  <div className="flex items-center justify-center grid grid-cols-2 gap-2 center ">
-                    {topOrmawa.instagram && (
-                      <a
-                        href={`https://instagram.com/${topOrmawa.instagram.replace("@", "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-1.5 bg-white text-[var(--ink)] font-semibold py-2.5 px-3 rounded-xl hover:bg-white/90 transition-colors text-xs"
-                      >
-                        <Camera className="w-3.5 h-3.5" />
-                        Instagram
-                      </a>
-                    )}
-                    {topOrmawa.googleSite && (
-                      <a
-                        href={topOrmawa.googleSite}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex items-center justify-center gap-1.5 bg-white/10 text-white font-semibold py-2.5 px-3 rounded-xl hover:bg-white/20 transition-colors border border-white/20 text-xs ${
-                          !topOrmawa.instagram ? "col-span-2" : ""
-                        }`}
-                      >
-                        <Globe className="w-3.5 h-3.5" />
-                        Website
-                      </a>
-                    )}
-                  </div>
-                )}
+                {/* Social Media Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  {topOrmawa.instagram && (
+                    <a
+                      href={`https://instagram.com/${topOrmawa.instagram.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1.5 bg-white text-[var(--ink)] font-semibold py-2.5 px-3 rounded-xl hover:bg-white/90 transition-colors text-xs"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      Instagram
+                    </a>
+                  )}
+                  {topOrmawa.googleSite && (
+                    <a
+                      href={topOrmawa.googleSite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center justify-center gap-1.5 bg-white/10 text-white font-semibold py-2.5 px-3 rounded-xl hover:bg-white/20 transition-colors border border-white/20 text-xs ${
+                        !topOrmawa.instagram ? "col-span-2" : ""
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      Website
+                    </a>
+                  )}
+                  {!topOrmawa.instagram && !topOrmawa.googleSite && (
+                    <div className="col-span-2 text-center text-white/40 text-xs py-1">
+                      Belum ada link sosial media
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* ---------- Right column: #2, #3, and the rest ---------- */}
+        {/* ==========================================
+            RIGHT: #2, #3, AND OTHERS
+            ========================================== */}
         <div className="lg:col-span-2 mt-5 lg:mt-0 space-y-3">
+          {/* #2 and #3 - GRID */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-3">
-            {secondMatch && (
+            {/* #2 */}
+            {secondMatch && secondOrmawa && (
               <motion.div
                 initial={reduceMotion ? {} : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="bg-[var(--paper)] rounded-xl p-4 border-2 border-[var(--line)] hover:border-[var(--silver)] transition-colors"
               >
-                <div className="flex items-start gap-3">
-                  <OrmawaLogo ormawa={secondOrmawa} size={40} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Medal className="w-3 h-3 text-[var(--silver)]" />
-                      <span className="text-xs font-bold text-[var(--ink-soft)]">#2</span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-[var(--bg)] border border-[var(--line)] rounded-full text-[var(--ink-soft)] truncate">
-                        {secondOrmawa?.type}
-                      </span>
+                <div className="flex flex-col gap-3">
+                  {/* Row: Logo + Badge + Nama */}
+                  <div className="flex items-start gap-3">
+                    <OrmawaLogo ormawa={secondOrmawa} size={44} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <Medal className="w-3.5 h-3.5 text-[var(--silver)] shrink-0" />
+                        <span className="text-xs font-bold text-[var(--ink-soft)]">#2</span>
+                        <span className="text-[10px] px-1.5 py-0.5 bg-[var(--bg)] border border-[var(--line)] rounded-full text-[var(--ink-soft)] truncate">
+                          {secondOrmawa.type}
+                        </span>
+                      </div>
+                      <h3 className="font-[family-name:var(--font-display)] font-bold text-sm truncate">
+                        {secondMatch.name}
+                      </h3>
                     </div>
-                    <h3 className="font-[family-name:var(--font-display)] font-bold text-sm mb-1 truncate">
-                      {secondMatch.name}
-                    </h3>
-                    <p className="text-xs text-[var(--ink-soft)] mb-3 line-clamp-2">{secondOrmawa?.description}</p>
-
-                    <div className="mb-3">
-                      <ScoreBar score={secondMatch.score} delay={0.25} color="bg-[var(--silver)]" />
-                    </div>
-
-                    <Link
-                      href={`/explore/${secondMatch.ormawaId}`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[var(--orange)] hover:text-[var(--orange-dark)]"
-                    >
-                      Lihat Detail <ChevronRight className="w-3 h-3" />
-                    </Link>
                   </div>
+
+                  {/* Deskripsi */}
+                  <p className="text-xs text-[var(--ink-soft)] line-clamp-2">
+                    {secondOrmawa.description}
+                  </p>
+
+                  {/* Score Bar */}
+                  <ScoreBar score={secondMatch.score} delay={0.25} color="bg-[var(--silver)]" />
+
+                  {/* Link Detail */}
+                  <Link
+                    href={`/explore/${secondMatch.ormawaId}`}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[var(--orange)] hover:text-[var(--orange-dark)] self-start"
+                  >
+                    Lihat Detail <ChevronRight className="w-3 h-3" />
+                  </Link>
                 </div>
               </motion.div>
             )}
 
-            {thirdMatch && (
+            {/* #3 */}
+            {thirdMatch && thirdOrmawa && (
               <motion.div
                 initial={reduceMotion ? {} : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
                 className="bg-[var(--paper)] rounded-xl p-4 border-2 border-[var(--line)] hover:border-[var(--orange)]/50 transition-colors"
               >
-                <div className="flex items-start gap-3">
-                  <OrmawaLogo ormawa={thirdOrmawa} size={40} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Award className="w-3 h-3 text-[var(--orange)]" />
-                      <span className="text-xs font-bold text-[var(--ink-soft)]">#3</span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-[var(--bg)] border border-[var(--line)] rounded-full text-[var(--ink-soft)] truncate">
-                        {thirdOrmawa?.type}
-                      </span>
+                <div className="flex flex-col gap-3">
+                  {/* Row: Logo + Badge + Nama */}
+                  <div className="flex items-start gap-3">
+                    <OrmawaLogo ormawa={thirdOrmawa} size={44} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <Award className="w-3.5 h-3.5 text-[var(--orange)] shrink-0" />
+                        <span className="text-xs font-bold text-[var(--ink-soft)]">#3</span>
+                        <span className="text-[10px] px-1.5 py-0.5 bg-[var(--bg)] border border-[var(--line)] rounded-full text-[var(--ink-soft)] truncate">
+                          {thirdOrmawa.type}
+                        </span>
+                      </div>
+                      <h3 className="font-[family-name:var(--font-display)] font-bold text-sm truncate">
+                        {thirdMatch.name}
+                      </h3>
                     </div>
-                    <h3 className="font-[family-name:var(--font-display)] font-bold text-sm mb-1 truncate">
-                      {thirdMatch.name}
-                    </h3>
-                    <p className="text-xs text-[var(--ink-soft)] mb-3 line-clamp-2">{thirdOrmawa?.description}</p>
-
-                    <div className="mb-3">
-                      <ScoreBar score={thirdMatch.score} delay={0.3} />
-                    </div>
-
-                    <Link
-                      href={`/explore/${thirdMatch.ormawaId}`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[var(--orange)] hover:text-[var(--orange-dark)]"
-                    >
-                      Lihat Detail <ChevronRight className="w-3 h-3" />
-                    </Link>
                   </div>
+
+                  {/* Deskripsi */}
+                  <p className="text-xs text-[var(--ink-soft)] line-clamp-2">
+                    {thirdOrmawa.description}
+                  </p>
+
+                  {/* Score Bar */}
+                  <ScoreBar score={thirdMatch.score} delay={0.3} />
+
+                  {/* Link Detail */}
+                  <Link
+                    href={`/explore/${thirdMatch.ormawaId}`}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[var(--orange)] hover:text-[var(--orange-dark)] self-start"
+                  >
+                    Lihat Detail <ChevronRight className="w-3 h-3" />
+                  </Link>
                 </div>
               </motion.div>
             )}
           </div>
 
-          {/* Other Matches */}
+          {/* OTHER MATCHES */}
           {otherMatches.length > 0 && (
             <motion.div
               initial={reduceMotion ? {} : { opacity: 0 }}
@@ -441,6 +491,8 @@ export default function ResultPage() {
               <div className="divide-y divide-[var(--line)]">
                 {otherMatches.map((match, idx) => {
                   const ormawa = fullOrmawaData[match.ormawaId];
+                  if (!ormawa) return null;
+
                   return (
                     <motion.div
                       key={match.ormawaId}
@@ -459,7 +511,7 @@ export default function ResultPage() {
                           <OrmawaLogo ormawa={ormawa} size={28} />
                           <div className="min-w-0 flex-1">
                             <p className="font-bold text-xs truncate">{match.name}</p>
-                            <p className="text-[10px] text-[var(--ink-soft)] truncate">{ormawa?.type}</p>
+                            <p className="text-[10px] text-[var(--ink-soft)] truncate">{ormawa.type}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -474,7 +526,7 @@ export default function ResultPage() {
             </motion.div>
           )}
 
-          {/* Footer Actions */}
+          {/* FOOTER */}
           <motion.div
             initial={reduceMotion ? {} : { opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -494,8 +546,8 @@ export default function ResultPage() {
 
             <div className="bg-[var(--orange)]/10 rounded-xl p-4 text-center">
               <p className="text-xs text-[var(--ink-soft)]">
-                <span className="font-bold text-[var(--ink)]">Tips:</span> Hasil ini bersifat rekomendasi. Jangan
-                ragu untuk mengeksplorasi organisasi lain!
+                <span className="font-bold text-[var(--ink)]">Tips:</span> Hasil ini bersifat rekomendasi.
+                Jangan ragu untuk mengeksplorasi organisasi lain!
               </p>
             </div>
           </motion.div>

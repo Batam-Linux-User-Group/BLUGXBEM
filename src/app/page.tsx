@@ -165,9 +165,13 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16 md:h-20">
             <div className="flex items-center gap-2.5">
               <div className="flex items-center gap-1.5 bg-[var(--paper)] border border-[var(--line)] rounded-xl px-2 py-1.5">
-                <Image src="/logos/BEM.png" alt="Logo BEM" width={30} height={30} className="w-7 h-7 object-contain" priority />
+                <div className="relative w-7 h-7 shrink-0">
+                  <Image src="/logos/BEM.png" alt="Logo BEM" fill className="object-contain" priority />
+                </div>
                 <span className="text-[var(--ink-soft)] font-bold text-xs">×</span>
-                <Image src="/logos/BLUG.png" alt="Logo BLUG" width={30} height={30} className="w-7 h-7 object-contain" priority />
+                <div className="relative w-7 h-7 shrink-0">
+                  <Image src="/logos/BLUG.png" alt="Logo BLUG" fill className="object-contain" priority />
+                </div>
               </div>
               <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight text-[var(--ink)]">
                 GOPO <span className="text-[var(--orange)]">2026</span>
@@ -309,7 +313,7 @@ export default function LandingPage() {
 >
   <div className="w-full">
     <img
-      src="/images/sinergisasi2.png"
+      src="/images/sinergisasi12.png"
       alt="Ilustrasi Hero Sinergisasi"
       className="w-full h-auto object-contain drop-shadow-2xl scale-110 lg:scale-125 xl:scale-135"
     />

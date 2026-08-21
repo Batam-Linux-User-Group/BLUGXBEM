@@ -3,6 +3,29 @@ import { Answer, MatchResult } from "@/types/quiz";
 import { Ormawa } from "@/types/ormawa";
 import { CATEGORIES } from "@/data/categories";
 
+// =========================================================
+// ORGANISASI EXCLUSIVE PER JURUSAN (Himpunan Mahasiswa Jurusan / HMJ)
+// Mahasiswa DI LUAR jurusan ini secara struktural TIDAK BISA
+// menjadi anggota, jadi org ini wajib difilter total dari hasil
+// (bukan sekadar dikurangi skornya) kalau jurusan tidak cocok.
+// =========================================================
+const jurusanExclusiveOrmawa: Record<string, string> = {
+  "hme": "elektro",
+  "hmti": "informatika",
+  "hmm": "mesin",
+  "hmmb": "manajemen_bisnis",
+};
+
+// =========================================================
+// BONUS RELEVANSI (opsional, BUKAN syarat wajib)
+// Organisasi umum/minat yang temanya nyambung ke jurusan tertentu,
+// tapi tetap terbuka untuk semua jurusan (mis. UKM/komunitas minat).
+// =========================================================
+const jurusanPreference: Record<string, string[]> = {
+  "informatika": ["blug"],
+  "manajemen_bisnis": ["energi"],
+};
+
 export function calculateMatches(
   answers: Answer[],
   ormawaList: Ormawa[]
@@ -48,7 +71,19 @@ export function calculateMatches(
   }
 
   // =========================================================
-  // 4. KATEGORI UTAMA PER ORMAWA (berdasarkan data Excel)
+  // 4. FILTER KELAYAKAN: buang org HMJ yang jurusannya tidak cocok
+  //    SEBELUM dihitung skornya sama sekali. Ini yang mencegah
+  //    mahasiswa Mesin direkomendasikan ke HMTI/HME, dst.
+  // =========================================================
+
+  const eligibleOrmawaList = ormawaList.filter((ormawa) => {
+    const requiredJurusan = jurusanExclusiveOrmawa[ormawa.id];
+    if (!requiredJurusan) return true; // org umum, terbuka untuk semua jurusan
+    return userJurusan === requiredJurusan;
+  });
+
+  // =========================================================
+  // 5. KATEGORI UTAMA PER ORMAWA (berdasarkan data Excel)
   // =========================================================
 
   const mainCategory: Record<string, string[]> = {
@@ -71,21 +106,10 @@ export function calculateMatches(
   };
 
   // =========================================================
-  // 5. Preferensi Jurusan untuk Bonus
+  // 6. Hitung kecocokan setiap ORMAWA yang ELIGIBLE
   // =========================================================
 
-  const jurusanPreference: Record<string, string[]> = {
-    "informatika": ["hmti", "blug"],
-    "elektro": ["hme"],
-    "mesin": ["hmm"],
-    "manajemen_bisnis": ["hmmb", "energi"]
-  };
-
-  // =========================================================
-  // 6. Hitung kecocokan setiap ORMAWA
-  // =========================================================
-
-  const results: MatchResult[] = ormawaList.map((ormawa) => {
+  const results: MatchResult[] = eligibleOrmawaList.map((ormawa) => {
     let totalWeightedScore = 0;
     let totalWeight = 0;
     const matchedSkills: string[] = [];
@@ -100,7 +124,18 @@ export function calculateMatches(
         continue;
       }
 
-      const studentScore = studentAvg[category] || 0;
+      // Beberapa ormawa punya bobot skill (mis. "design") yang TIDAK PERNAH
+      // ditanyakan di kuis (lihat questions.ts). Kalau tetap dihitung sebagai
+      // skor 0, ormawa yang mengandalkan skill itu (KUAS, REKAM, dll.) akan
+      // dirugikan secara tidak adil karena penyebutnya (totalWeight) naik
+      // tapi pembilangnya tidak pernah bertambah. Jadi kategori yang memang
+      // tidak pernah dijawab mahasiswa di-skip total dari perhitungan ini,
+      // bukan dianggap skor 0.
+      if (!(category in studentAvg)) {
+        continue;
+      }
+
+      const studentScore = studentAvg[category];
       const contribution = studentScore * ormawaWeight;
 
       totalWeightedScore += contribution;
@@ -108,7 +143,8 @@ export function calculateMatches(
 
       // Badge skill: jika rata-rata mahasiswa >= 3.5
       if (studentScore >= 3.5) {
-        const skillName = CATEGORIES[category];
+        const categoryKey = category as keyof typeof CATEGORIES;
+        const skillName = CATEGORIES[categoryKey];
         if (skillName && !matchedSkills.includes(skillName)) {
           matchedSkills.push(skillName);
         }
@@ -139,11 +175,16 @@ export function calculateMatches(
     percentage += bonusMainCategory;
 
     // =======================================================
-    // 6d. BONUS JURUSAN (+8% jika jurusan cocok)
+    // 6d. BONUS JURUSAN (+8%) — hanya penambah relevansi,
+    //     org yang jurusannya tidak cocok sudah tersaring
+    //     di langkah 4 dan tidak akan sampai ke sini.
     // =======================================================
 
     let bonusJurusan = 0;
     if (userJurusan && jurusanPreference[userJurusan]?.includes(ormawa.id)) {
+      bonusJurusan = 8;
+    }
+    if (userJurusan && jurusanExclusiveOrmawa[ormawa.id] === userJurusan) {
       bonusJurusan = 8;
     }
     percentage += bonusJurusan;
@@ -158,8 +199,14 @@ export function calculateMatches(
         continue;
       }
 
-      const studentScore = studentAvg[category] || 0;
-      
+      // Sama seperti di 6a: kategori yang tidak pernah ditanyakan di kuis
+      // tidak boleh ikut dihitung sebagai "skor rendah" mahasiswa.
+      if (!(category in studentAvg)) {
+        continue;
+      }
+
+      const studentScore = studentAvg[category];
+
       // Jika bobot ORMAWA tinggi (>= 7) tapi skor mahasiswa rendah (< 3)
       if (ormawaWeight >= 7 && studentScore < 3) {
         penalty += (3 - studentScore) * 2;
@@ -197,12 +244,15 @@ export function calculateMatches(
 
   // Filter: hanya tampilkan yang score >= 40%
   // Tapi tetap tampilkan minimal 3 rekomendasi
+  // (karena eligibleOrmawaList sudah menyaring org HMJ yang tidak
+  // relevan, fallback top-3 ini otomatis ikut hanya berisi org yang
+  // memang eligible untuk jurusan mahasiswa)
   const filteredResults = sortedResults.filter(r => r.score >= 40);
-  
+
   if (filteredResults.length >= 3) {
     return filteredResults;
   }
-  
-  // Jika kurang dari 3, tampilkan top 3
+
+  // Jika kurang dari 3, tampilkan top 3 dari yang eligible
   return sortedResults.slice(0, 3);
 }

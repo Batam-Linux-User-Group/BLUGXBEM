@@ -9,14 +9,14 @@ import {
   Link as LinkIcon, 
   Globe, 
   ArrowLeft,
-  ChevronRight // Ganti Sparkles dengan ChevronRight untuk navigasi "Lihat Detail"
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { ORMAWA_LIST } from "@/data/ormawa";
 import { Ormawa } from "@/types/ormawa";
 
-// --- Komponen Logo (Sama seperti sebelumnya) ---
+// --- Komponen Logo ---
 function OrmawaLogo({ ormawa, size = 56 }: { ormawa?: Ormawa; size?: number }) {
   const [failed, setFailed] = useState(false);
   const initials = ormawa?.shortName?.substring(0, 2).toUpperCase() ?? "??";
@@ -24,7 +24,7 @@ function OrmawaLogo({ ormawa, size = 56 }: { ormawa?: Ormawa; size?: number }) {
   return (
     <div className="relative shrink-0 rounded-xl bg-[var(--paper)] border border-[var(--line)] flex items-center justify-center overflow-hidden shadow-sm" style={{ width: size, height: size }}>
       {ormawa?.logo && !failed ? (
-        <Image src={ormawa.logo} alt={`Logo ${ormawa.name}`} width={size} height={size} className="object-contain p-2" onError={() => setFailed(true)} />
+        <Image src={ormawa.logo} alt={`Logo ${ormawa.name}`} fill className="object-contain p-2" onError={() => setFailed(true)} />
       ) : (
         <span className="font-[family-name:var(--font-display)] font-bold text-[var(--orange)]/60" style={{ fontSize: size * 0.32 }}>{initials}</span>
       )}
@@ -56,7 +56,7 @@ export default function ExplorePage() {
 
   return (
     <main style={themeVars} className="min-h-screen bg-[var(--bg)] text-[var(--ink)] font-[family-name:var(--font-body)] antialiased pb-20">
-      {/* Header & Search (Sama seperti sebelumnya) */}
+      {/* Header & Search */}
       <div className="sticky top-0 z-50 bg-[var(--bg)]/90 backdrop-blur-md border-b border-[var(--line)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center gap-4 mb-5">
@@ -85,107 +85,103 @@ export default function ExplorePage() {
           </motion.div>
         ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {filteredOrmawa.map((ormawa, index) => (
-    <Link
-      key={ormawa.id}
-      href={`/explore/${ormawa.id}`}
-      className="block h-full"
-    >
-      <motion.div
-        initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: reduceMotion ? 0 : index * 0.05 }}
-        className="group h-full bg-[var(--paper)] rounded-2xl border border-[var(--line)] overflow-hidden hover:shadow-lg hover:border-[var(--orange)]/30 hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
-      >
-        {/* CONTENT */}
-        <div className="p-6 flex-1 flex flex-col">
-
-          {/* Logo + Nama */}
-          <div className="flex items-start gap-4 mb-4">
-            <OrmawaLogo ormawa={ormawa} size={56} />
-
-            <div className="flex-1 min-w-0">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2 ${
-                  ormawa.type === "Eksekutif"
-                    ? "bg-[var(--orange)]/10 text-[var(--orange-dark)]"
-                    : ormawa.type === "Legislatif"
-                    ? "bg-[var(--navy)]/10 text-[var(--navy)]"
-                    : ormawa.type === "HMJ"
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-[var(--bg)] text-[var(--ink-soft)] border border-[var(--line)]"
-                }`}
+          {filteredOrmawa.map((ormawa, index) => (
+            <Link
+              key={ormawa.id}
+              href={`/explore/${ormawa.id}`}
+              className="block h-full"
+            >
+              <motion.div
+                initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: reduceMotion ? 0 : index * 0.05 }}
+                className="group h-full bg-[var(--paper)] rounded-2xl border border-[var(--line)] overflow-hidden hover:shadow-lg hover:border-[var(--orange)]/30 hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
               >
-                {ormawa.type}
-              </span>
+                {/* CONTENT */}
+                <div className="p-6 flex-1 flex flex-col">
 
-              <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-[var(--ink)] leading-tight group-hover:text-[var(--orange)] transition-colors line-clamp-1">
-                {ormawa.name}
-              </h3>
-            </div>
-          </div>
+                  {/* Logo + Nama - NAMA SEKARANG TIDAK TERPOTONG */}
+                  <div className="flex items-start gap-4 mb-4">
+                    <OrmawaLogo ormawa={ormawa} size={56} />
 
-          {/* Tagline */}
-          {ormawa.tagline && (
-            <p className="text-xs font-medium text-[var(--orange)] italic mb-2">
-              "{ormawa.tagline}"
-            </p>
-          )}
+                    <div className="flex-1 min-w-0">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2 ${
+                          ormawa.type === "Eksekutif"
+                            ? "bg-[var(--orange)]/10 text-[var(--orange-dark)]"
+                            : ormawa.type === "Legislatif"
+                            ? "bg-[var(--navy)]/10 text-[var(--navy)]"
+                            : ormawa.type === "HMJ"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-[var(--bg)] text-[var(--ink-soft)] border border-[var(--line)]"
+                        }`}
+                      >
+                        {ormawa.type}
+                      </span>
 
-          {/* Description */}
-          <p className="text-sm text-[var(--ink-soft)] line-clamp-3 mb-5 leading-relaxed flex-1">
-            {ormawa.description}
-          </p>
+                      {/* HAPUS line-clamp-1 AGAR NAMA TIDAK TERPOTONG */}
+                      <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-[var(--ink)] leading-tight group-hover:text-[var(--orange)] transition-colors break-words">
+                        {ormawa.name}
+                      </h3>
+                    </div>
+                  </div>
 
-          {/* Focus Areas */}
-          <div className="flex flex-wrap gap-2 mt-auto">
-            {ormawa.focusAreas.slice(0, 2).map((area, idx) => (
-              <span
-                key={idx}
-                className="text-[11px] px-2 py-1 bg-[var(--bg)] text-[var(--ink-soft)] rounded-md border border-[var(--line)]"
-              >
-                {area}
-              </span>
-            ))}
+                  {/* Tagline */}
+                  {ormawa.tagline && (
+                    <p className="text-xs font-medium text-[var(--orange)] italic mb-2">
+                      &ldquo;{ormawa.tagline}&rdquo;
+                    </p>
+                  )}
 
-            {ormawa.focusAreas.length > 2 && (
-              <span className="text-[11px] px-2 py-1 bg-[var(--bg)] text-[var(--ink-soft)] rounded-md border border-[var(--line)]">
-                +{ormawa.focusAreas.length - 2}
-              </span>
-            )}
-          </div>
+                  {/* Description - DIBUAT LEBIH FLEKSIBEL */}
+                  <p className="text-sm text-[var(--ink-soft)] line-clamp-3 mb-5 leading-relaxed flex-1">
+                    {ormawa.description}
+                  </p>
+
+                  {/* Focus Areas */}
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {ormawa.focusAreas.slice(0, 2).map((area, idx) => (
+                      <span
+                        key={idx}
+                        className="text-[11px] px-2 py-1 bg-[var(--bg)] text-[var(--ink-soft)] rounded-md border border-[var(--line)]"
+                      >
+                        {area}
+                      </span>
+                    ))}
+
+                    {ormawa.focusAreas.length > 2 && (
+                      <span className="text-[11px] px-2 py-1 bg-[var(--bg)] text-[var(--ink-soft)] rounded-md border border-[var(--line)]">
+                        +{ormawa.focusAreas.length - 2}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* FOOTER */}
+                <div className="px-6 py-4 bg-[var(--bg)]/50 border-t border-[var(--line)] flex items-center justify-between">
+                  <div className="flex gap-2">
+                    {ormawa.instagram && (
+                      <span className="p-2 rounded-lg bg-[var(--paper)] text-[var(--ink-soft)] border border-[var(--line)]">
+                        <Camera className="w-4 h-4" />
+                      </span>
+                    )}
+
+                    {ormawa.googleSite && (
+                      <span className="p-2 rounded-lg bg-[var(--paper)] text-[var(--ink-soft)] border border-[var(--line)]">
+                        <Globe className="w-4 h-4" />
+                      </span>
+                    )}
+                  </div>
+
+                  <span className="text-sm font-bold text-[var(--orange)] flex items-center gap-1.5">
+                    Lihat Detail
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </motion.div>
+            </Link>
+          ))}
         </div>
-
-        {/* FOOTER */}
-        <div className="px-6 py-4 bg-[var(--bg)]/50 border-t border-[var(--line)] flex items-center justify-between">
-          <div className="flex gap-2">
-            {ormawa.instagram && (
-              <span
-                className="p-2 rounded-lg bg-[var(--paper)] text-[var(--ink-soft)] border border-[var(--line)]"
-              >
-                <Camera className="w-4 h-4" />
-              </span>
-            )}
-
-            {ormawa.googleSite && (
-              <span
-                className="p-2 rounded-lg bg-[var(--paper)] text-[var(--ink-soft)] border border-[var(--line)]"
-              >
-                <Globe className="w-4 h-4" />
-              </span>
-            )}
-          </div>
-
-          {/* Indikator */}
-          <span className="text-sm font-bold text-[var(--orange)] flex items-center gap-1.5">
-            Lihat Detail
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </span>
-        </div>
-      </motion.div>
-    </Link>
-  ))}
-</div>
         )}
       </div>
     </main>
