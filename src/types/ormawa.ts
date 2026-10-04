@@ -34,6 +34,10 @@ export interface Ormawa {
   focusAreas: string[];
   uniqueCharacteristics: string[];
   flagshipPrograms: string[];
+  recruitmentTitle?: string; // Judul pengumuman open recruitment / oprec
+  recruitmentDescription?: string; // Deskripsi singkat kegiatan pendaftaran
+  recruitmentStartDate?: string; // Tanggal mulai pendaftaran, format ISO YYYY-MM-DD
+  recruitmentEndDate?: string; // Tanggal akhir pendaftaran, format ISO YYYY-MM-DD
   departments?: string[];
 
   // Penilaian & Target
@@ -52,5 +56,6 @@ export interface Ormawa {
   youtube?: string;
   linktree?: string;
   googleSite?: string;  // Untuk website resmi atau platform lain
+  registrationLink?: string; // Link form pendaftaran/registration ORMAWA
   contactPerson?: string;
 }

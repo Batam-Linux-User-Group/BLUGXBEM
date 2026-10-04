@@ -43,6 +43,7 @@ function OrmawaLogo({ ormawa, size = 48 }: { ormawa?: Ormawa; size?: number }) {
           src={ormawa.logo}
           alt={`Logo ${ormawa.name}`}
           fill
+          sizes={`${size}px`}
           className="object-contain p-1.5"
           onError={() => setFailed(true)}
         />

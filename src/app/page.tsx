@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
@@ -24,39 +24,47 @@ import {
   Dumbbell,
   Menu,
   X,
+  ClipboardCheck,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowSplash(false), 1800);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const fadeUp = reduceMotion
     ? {}
     : {
-        initial: { opacity: 0, y: 16 },
-        whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true, margin: "-40px" },
-      };
+      initial: { opacity: 0, y: 16 },
+      whileInView: { opacity: 1, y: 0 },
+      viewport: { once: true, margin: "-40px" },
+    };
 
   const ormawaList = [
-    { name: "DPM", logo: "/logos/DPM.png", no: "01" },
-    { name: "BEM", logo: "/logos/BEM.png", no: "02" },
-    { name: "HMMB", logo: "/logos/HMMB.png", no: "03" },
-    { name: "HMTI", logo: "/logos/HMTI.png", no: "04" },
-    { name: "HME", logo: "/logos/HME.png", no: "05" },
-    { name: "HMM", logo: "/logos/HMM.png", no: "06" },
-    { name: "IMMPB", logo: "/logos/IMMPB.png", no: "07" },
-    { name: "PD-Elshaddai", logo: "/logos/EL-SHADAI.png", no: "08" },
-    { name: "BLUG", logo: "/logos/BLUG.png", no: "09" },
-    { name: "MAPALA", logo: "/logos/MAPALA.png", no: "10" },
-    { name: "PEC", logo: "/logos/PEC.png", no: "11" },
-    { name: "LPM", logo: "/logos/LPM.png", no: "12" },
-    { name: "KOP", logo: "/logos/KOP.png", no: "13" },
-    { name: "KUAS", logo: "/logos/KUAS.png", no: "14" },
-    { name: "ENERGI", logo: "/logos/ENERGI.png", no: "15" },
-    { name: "REKAM", logo: "/logos/REKAM.png", no: "16" },
+    { name: "DPM", logo: "/logos/DPM.webp", no: "01" },
+    { name: "BEM", logo: "/logos/BEM.webp", no: "02" },
+    { name: "HMMB", logo: "/logos/HMMB.webp", no: "03" },
+    { name: "HMTI", logo: "/logos/HMTI.webp", no: "04" },
+    { name: "HME", logo: "/logos/HME.webp", no: "05" },
+    { name: "HMM", logo: "/logos/HMM.webp", no: "06" },
+    { name: "IMMPB", logo: "/logos/IMMPB.webp", no: "07" },
+    { name: "PD-Elshaddai", logo: "/logos/EL-SHADAI.webp", no: "08" },
+    { name: "BLUG", logo: "/logos/BLUG.webp", no: "09" },
+    { name: "MAPALA", logo: "/logos/MAPALA.webp", no: "10" },
+    { name: "PEC", logo: "/logos/PEC.webp", no: "11" },
+    { name: "LPM", logo: "/logos/LPM.webp", no: "12" },
+    { name: "KOP", logo: "/logos/KOP-1.webp", no: "13" },
+    { name: "KUAS", logo: "/logos/KUAS.webp", no: "14" },
+    { name: "ENERGI", logo: "/logos/ENERGI.webp", no: "15" },
+    { name: "REKAM", logo: "/logos/REKAM.webp", no: "16" },
   ];
 
   const features = [
@@ -65,8 +73,8 @@ export default function LandingPage() {
       title: "Find Your Match",
       subtitle: "Temukan Kecocokanmu",
       description:
-        "Ikuti quiz interaktif untuk menemukan ORMAWA yang paling sesuai dengan karakter dan minatmu.",
-      link: "/quiz",
+        "Daftar sekarang dan temukan organisasi mahasiswa yang paling sesuai dengan minat, bakat, dan tujuanmu.",
+      link: "/explore",
     },
     {
       icon: Users,
@@ -113,28 +121,27 @@ export default function LandingPage() {
   ];
 
   const howItWorks = [
-    {
-      step: "01",
-      icon: Target,
-      title: "Jawab Quiz",
-      desc: "Isi quiz interaktif singkat untuk menganalisis minat, bakat, dan karakter kepemimpinanmu.",
-    },
-    {
-      step: "02",
-      icon: TrendingUp,
-      title: "Lihat Persentase",
-      desc: "Dapatkan kalkulasi persentase kecocokanmu secara real-time dengan seluruh ORMAWA.",
-    },
-    {
-      step: "03",
-      icon: Users,
-      title: "Jelajahi & Bergabung",
-      desc: "Pelajari profil lengkap ORMAWA yang cocok dan langsung terhubung dengan pengurus.",
-    },
-  ];
-
+  {
+    step: "01",
+    icon: ClipboardCheck,
+    title: "Pilih ORMAWA",
+    desc: "Temukan berbagai ORMAWA yang tersedia dan pilih organisasi yang sesuai dengan minatmu.",
+  },
+  {
+    step: "02",
+    icon: FileText,
+    title: "Isi Formulir",
+    desc: "Lengkapi data dan formulir pendaftaran sesuai dengan ORMAWA yang kamu pilih.",
+  },
+  {
+    step: "03",
+    icon: Users,
+    title: "Bergabung",
+    desc: "Selesaikan proses pendaftaran dan bersiap menjadi bagian dari ORMAWA pilihanmu.",
+  },
+];
   const navLinks = [
-    { href: "#explore", label: "Explore" },
+    { href: "/daftar", label: "Explore" },
     { href: "#how-it-works", label: "Cara Kerja" },
     { href: "#categories", label: "Bidang" },
   ];
@@ -159,6 +166,46 @@ export default function LandingPage() {
       }
       className="min-h-screen bg-[var(--bg)] text-[var(--ink)] selection:bg-[var(--orange)] selection:text-white font-[family-name:var(--font-body)] antialiased"
     >
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--navy)] overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(228,87,46,0.3),_transparent_45%)]" aria-hidden />
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 1.08, opacity: 0, y: -10 }}
+              transition={{ duration: 0.65, ease: "easeOut" }}
+              className="relative z-10 flex flex-col items-center text-center"
+            >
+              <div className="mb-6 flex items-center justify-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+                <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/20 bg-white/5">
+                  <Image src="/logos/BEM.webp" alt="Logo BEM" fill sizes="48px" className="object-contain p-1" priority />
+                </div>
+                <span className="text-white/60 text-xs font-bold uppercase tracking-[0.35em]">×</span>
+                <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/20 bg-white/5">
+                  <Image src="/logos/BLUG.webp" alt="Logo BLUG" fill sizes="48px" className="object-contain p-1" priority />
+                </div>
+              </div>
+
+              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.38em] text-white/60">
+                Grand Opening Pengaderan ORMAWA
+              </p>
+              <h1 className="mt-4 font-[family-name:var(--font-display)] text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white">
+                GOPO
+              </h1>
+              <p className="mt-3 text-sm sm:text-base text-white/80">
+                2026
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-[var(--bg)]/90 backdrop-blur-md border-b border-[var(--line)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,11 +213,11 @@ export default function LandingPage() {
             <div className="flex items-center gap-2.5">
               <div className="flex items-center gap-1.5 bg-[var(--paper)] border border-[var(--line)] rounded-xl px-2 py-1.5">
                 <div className="relative w-7 h-7 shrink-0">
-                  <Image src="/logos/BEM.png" alt="Logo BEM" fill className="object-contain" priority />
+                  <Image src="/logos/BEM.webp" alt="Logo BEM" fill sizes="28px" className="object-contain" priority />
                 </div>
                 <span className="text-[var(--ink-soft)] font-bold text-xs">×</span>
                 <div className="relative w-7 h-7 shrink-0">
-                  <Image src="/logos/BLUG.png" alt="Logo BLUG" fill className="object-contain" priority />
+                  <Image src="/logos/BLUG.webp" alt="Logo BLUG" fill sizes="28px" className="object-contain" priority />
                 </div>
               </div>
               <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight text-[var(--ink)]">
@@ -191,9 +238,9 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link href="/quiz" className="hidden sm:block">
+              <Link href="/explore" className="hidden sm:block">
                 <button className="bg-[var(--orange)] hover:bg-[var(--orange-dark)] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange)] focus-visible:ring-offset-2">
-                  Mulai Quiz
+                  Daftar
                 </button>
               </Link>
               <button
@@ -228,9 +275,9 @@ export default function LandingPage() {
                     {link.label}
                   </a>
                 ))}
-                <Link href="/quiz" onClick={() => setMobileMenuOpen(false)} className="sm:hidden mt-2">
+                <Link href="/explore" onClick={() => setMobileMenuOpen(false)} className="sm:hidden mt-2">
                   <button className="w-full bg-[var(--orange)] hover:bg-[var(--orange-dark)] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors shadow-sm">
-                    Mulai Quiz
+                    Daftar
                   </button>
                 </Link>
               </div>
@@ -254,7 +301,7 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            
+
             {/* Left: headline */}
             <motion.div
               {...(reduceMotion ? {} : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } })}
@@ -281,14 +328,14 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-[var(--ink-soft)] text-lg leading-relaxed mb-9 max-w-lg">
-                16 ORMAWA. Isi quiz singkat, dapatkan skor kecocokanmu ke tiap organisasi,
-                lalu langsung terhubung dengan pengurusnya.
+                Pendaftaran ORMAWA telah dibuka! Temukan organisasi yang sesuai dengan minatmu,
+                lalu jadilah bagian dari pengalaman dan kesempatan baru di Polibatam.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/quiz">
+                <Link href="/explore">
                   <button className="w-full sm:w-auto px-7 py-4 rounded-xl bg-[var(--orange)] text-white font-bold text-base shadow-[4px_4px_0_0_var(--navy)] hover:shadow-[2px_2px_0_0_var(--navy)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange)] focus-visible:ring-offset-2">
-                    Mulai Quiz Sekarang
+                    Daftar Sekarang
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </Link>
@@ -301,24 +348,24 @@ export default function LandingPage() {
               </div>
             </motion.div>
 
-        <motion.div
-  {...(reduceMotion
-    ? {}
-    : {
-        initial: { opacity: 0, scale: 0.9 },
-        animate: { opacity: 1, scale: 1 },
-      })}
-  transition={{ duration: 0.8, delay: 0.2 }}
-  className="lg:col-span-5 flex justify-center items-center"
->
-  <div className="w-full">
-    <img
-      src="/images/sinergisasi12.png"
-      alt="Ilustrasi Hero Sinergisasi"
-      className="w-full h-auto object-contain drop-shadow-2xl scale-110 lg:scale-125 xl:scale-135"
-    />
-  </div>
-</motion.div>
+            <motion.div
+              {...(reduceMotion
+                ? {}
+                : {
+                  initial: { opacity: 0, scale: 0.9 },
+                  animate: { opacity: 1, scale: 1 },
+                })}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="lg:col-span-5 flex justify-center items-center"
+            >
+              <div className="w-full">
+                <img
+                  src="/images/sinergisasi12.webp"
+                  alt="Ilustrasi Hero Sinergisasi"
+                  className="w-full h-auto object-contain drop-shadow-2xl scale-110 lg:scale-125 xl:scale-135"
+                />
+              </div>
+            </motion.div>
 
           </div>
         </div>
@@ -340,9 +387,8 @@ export default function LandingPage() {
                 key={item.name}
                 {...(reduceMotion ? {} : { initial: { opacity: 0, y: 10 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true } })}
                 transition={{ delay: idx * 0.02 }}
-                className={`group relative bg-[var(--bg)] border border-dashed border-[var(--ink)]/25 hover:border-[var(--orange)] rounded-xl p-3 pt-5 flex flex-col items-center justify-center transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${
-                  idx % 2 === 0 ? "sm:-rotate-1" : "sm:rotate-1"
-                }`}
+                className={`group relative bg-[var(--bg)] border border-dashed border-[var(--ink)]/25 hover:border-[var(--orange)] rounded-xl p-3 pt-5 flex flex-col items-center justify-center transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${idx % 2 === 0 ? "sm:-rotate-1" : "sm:rotate-1"
+                  }`}
               >
                 <span className="absolute top-1.5 left-2 text-[9px] font-bold tracking-widest text-[var(--ink-soft)]">
                   {item.no}
@@ -426,7 +472,7 @@ export default function LandingPage() {
               Cara kerjanya
             </h2>
             <p className="text-white/60 text-base leading-relaxed">
-              Tiga tahap berurutan dari isi quiz sampai terhubung dengan ormawa pilihanmu.
+              Tiga langkah mudah untuk menemukan ORMAWA yang paling sesuai dengan minat dan tujuanmu.
             </p>
           </div>
 
@@ -510,9 +556,9 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/quiz">
+              <Link href="/daftar">
                 <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--ink)] text-white font-bold text-base hover:bg-[var(--navy)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--orange)]">
-                  Mulai Quiz Sekarang
+                  Daftar
                 </button>
               </Link>
               <Link href="/explore">
@@ -540,7 +586,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold text-white mb-3">Tautan Cepat</h4>
               <ul className="space-y-2 text-xs">
-                <li><Link href="/quiz" className="hover:text-[var(--orange)] transition-colors">Mulai Quiz</Link></li>
+                <li><Link href="/explore" className="hover:text-[var(--orange)] transition-colors">Daftar</Link></li>
                 <li><Link href="/explore" className="hover:text-[var(--orange)] transition-colors">Explore ORMAWA</Link></li>
                 <li><a href="#how-it-works" className="hover:text-[var(--orange)] transition-colors">Cara Kerja</a></li>
               </ul>

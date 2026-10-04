@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = "https://gopo.vercel.app";
-const ogImage = `${siteUrl}/images/sinergisasi.png`;
+const ogImage = `${siteUrl}/images/sinergisasi.webp`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
   publisher: "Gopo",
 
   icons: {
-    icon: "/images/sinergisasi.png",
-    shortcut: "/images/sinergisasi.png",
-    apple: "/images/sinergisasi.png",
+    icon: "/images/sinergisasi.webp",
+    shortcut: "/images/sinergisasi.webp",
+    apple: "/images/sinergisasi.webp",
   },
 
   openGraph: {
@@ -101,7 +101,7 @@ export default function RootLayout({
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body>
         {children}
       </body>
     </html>

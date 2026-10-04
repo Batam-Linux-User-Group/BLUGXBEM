@@ -7,6 +7,7 @@ import { useParams, useRouter, notFound } from "next/navigation";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowDown,
   Target,
   Award,
   Phone,
@@ -23,6 +24,7 @@ import {
   Glasses,
   Eye,
   Search,
+  FileText,
 } from "lucide-react";
 
 import { ORMAWA_LIST } from "@/data/ormawa";
@@ -109,11 +111,50 @@ export default function OrmawaDetailPage() {
     ormawa.tiktok ||
     ormawa.youtube ||
     ormawa.googleSite ||
-    ormawa.linktree
+    ormawa.linktree ||
+    ormawa.registrationLink
   );
   const hasPrograms = !!ormawa.flagshipPrograms?.length;
   const hasAchievements = !!ormawa.achievements?.length;
   const hasVideo = !!ormawa.video;
+  const recruitmentTitle = ormawa.recruitmentTitle || `Open Recruitment ${ormawa.shortName}`;
+  const recruitmentDescription =
+    ormawa.recruitmentDescription ||
+    `Bergabunglah bersama ${ormawa.name} dan mulai perjalananmu dalam organisasi yang tepat untuk mengembangkan bakat, kemampuan, dan relasimu.`;
+
+  const formatDate = (value?: string) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+  };
+
+  const getRecruitmentPeriod = () => {
+    const start = ormawa.recruitmentStartDate;
+    const end = ormawa.recruitmentEndDate;
+    if (!start && !end) return null;
+    if (start && end) return `${formatDate(start)} – ${formatDate(end)}`;
+    if (start) return `Mulai ${formatDate(start)}`;
+    return `Sampai ${formatDate(end)}`;
+  };
+
+  const isRegistrationOpen = () => {
+    if (!ormawa.registrationLink) return false;
+    const start = ormawa.recruitmentStartDate ? new Date(ormawa.recruitmentStartDate) : null;
+    const end = ormawa.recruitmentEndDate ? new Date(ormawa.recruitmentEndDate) : null;
+    const now = new Date();
+
+    if (start && start > now) return false;
+    if (end && end < now) return false;
+    return true;
+  };
+
+  const recruitmentPeriod = getRecruitmentPeriod();
+  const registrationOpen = isRegistrationOpen();
 
   // Fallback: kalau "gallery" kosong tapi ada data lama di "photos", tetap tampilkan.
   const galleryImages = ormawa.gallery?.length ? ormawa.gallery : ormawa.photos;
@@ -196,6 +237,41 @@ export default function OrmawaDetailPage() {
                 </a>
               )}
             </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="relative overflow-hidden rounded-2xl border border-[var(--orange)]/20 bg-[radial-gradient(circle_at_top_left,_rgba(228,87,46,0.18),_transparent_40%),linear-gradient(135deg,_rgba(255,255,255,0.94),_rgba(255,245,238,0.9))] p-5 sm:p-6 shadow-[0_18px_40px_-28px_rgba(228,87,46,0.45)]"
+        >
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-[var(--orange)]/12 blur-2xl" />
+          <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <span className="inline-flex items-center rounded-full border border-[var(--orange)]/30 bg-[var(--orange)]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--orange-dark)]">
+                Pengumuman
+              </span>
+              <div>
+                <h3 className="font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
+                  {recruitmentTitle}
+                </h3>
+                <p className="mt-1 text-sm text-[var(--ink-soft)] max-w-xl">
+                  {recruitmentDescription}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                document.getElementById("pendaftaran")?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--navy)] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-lg shadow-[var(--navy)]/20 transition-transform hover:-translate-y-0.5"
+            >
+              <ArrowDown className="w-4 h-4" />
+              Scroll ke bawah untuk daftar
+            </button>
           </div>
         </motion.div>
 
@@ -365,6 +441,19 @@ export default function OrmawaDetailPage() {
                       <span className="font-medium">Website Resmi</span>
                     </a>
                   )}
+                  {ormawa.registrationLink && (
+                    <a
+                      href={ormawa.registrationLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 text-sm text-[var(--ink-soft)] hover:text-[var(--orange)] transition-colors group"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-[var(--bg)] border border-[var(--line)] flex items-center justify-center group-hover:border-[var(--orange)] group-hover:bg-[var(--orange)]/5 transition-colors">
+                        <Link2 className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">Daftar ORMAWA</span>
+                    </a>
+                  )}
                   {ormawa.linktree && (
                     <a
                       href={ormawa.linktree}
@@ -473,30 +562,51 @@ export default function OrmawaDetailPage() {
               </motion.div>
             )}
 
+
+
             {/* Call to Action */}
             <motion.div
+              id="pendaftaran"
               initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
+              transition={{ delay: 0.3 }}
               className="bg-[var(--navy)] rounded-2xl p-6 sm:p-8 text-center text-white relative overflow-hidden shadow-lg"
             >
               <div className="absolute top-0 right-0 w-40 h-40 bg-[var(--orange)]/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-[var(--orange)]/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
 
               <h3 className="font-[family-name:var(--font-display)] text-xl sm:text-2xl font-bold mb-3 relative z-10">
-                Tertarik Bergabung?
+                Siap Bergabung?
               </h3>
-              <p className="text-white/70 mb-6 max-w-md mx-auto relative z-10 text-sm sm:text-base">
-                Ikuti kuis singkat untuk melihat seberapa besar kecocokan dirimu dengan nilai dan
-                kegiatan {ormawa.shortName}.
+
+              <p className="text-white/70 mb-4 max-w-md mx-auto relative z-10 text-sm sm:text-base">
+                Jangan lewatkan kesempatan untuk menjadi bagian dari {ormawa.shortName}.
+                Daftar sekarang dan mulai perjalananmu bersama kami.
               </p>
-              <Link
-                href="/quiz"
-                className="inline-flex items-center gap-2 bg-[var(--orange)] hover:bg-[var(--orange-dark)] text-white font-bold py-3 px-6 sm:px-8 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10 shadow-md shadow-[var(--orange)]/20"
-              >
-                <Search className="w-5 h-5" />
-                Mulai Kuis Kecocokan
-              </Link>
+
+              {recruitmentPeriod && (
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white/80 relative z-10">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[var(--orange)]" />
+                  {recruitmentPeriod}
+                </div>
+              )}
+
+              {ormawa.registrationLink && registrationOpen ? (
+                <Link
+                  href={ormawa.registrationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[var(--orange)] hover:bg-[var(--orange-dark)] text-white font-bold py-3 px-6 sm:px-8 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10 shadow-md shadow-[var(--orange)]/20"
+                >
+                  <FileText className="w-5 h-5" />
+                  Daftar Sekarang
+                </Link>
+              ) : (
+                <div className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-bold text-white/75 relative z-10">
+                  <FileText className="w-5 h-5" />
+                  Pendaftaran Ditutup
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
