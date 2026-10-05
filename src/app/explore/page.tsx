@@ -85,16 +85,23 @@ export default function ExplorePage() {
     );
   });
 
+  const normalizeText = (value?: string) => {
+    if (!value) return "";
+    const trimmed = value.trim();
+    return trimmed === "-" ? "" : trimmed;
+  };
+
   const getRecruitmentTitle = (ormawa: Ormawa) =>
-    ormawa.recruitmentTitle || `Open Recruitment ${ormawa.shortName}`;
+    normalizeText(ormawa.recruitmentTitle) || `Open Recruitment ${ormawa.shortName}`;
 
   const getRecruitmentDescription = (ormawa: Ormawa) =>
-    ormawa.recruitmentDescription ||
+    normalizeText(ormawa.recruitmentDescription) ||
     `Bergabunglah bersama ${ormawa.name} dan mulai perjalananmu di organisasi yang tepat dengan minat, bakat, dan semangatmu.`;
 
   const formatDate = (value?: string) => {
-    if (!value) return "-";
-    const date = new Date(value);
+    const safeValue = normalizeText(value);
+    if (!safeValue) return "-";
+    const date = new Date(safeValue);
     if (Number.isNaN(date.getTime())) return value;
     return new Intl.DateTimeFormat("id-ID", {
       day: "numeric",
@@ -104,24 +111,29 @@ export default function ExplorePage() {
   };
 
   const getRecruitmentPeriod = (ormawa: Ormawa) => {
-    const start = ormawa.recruitmentStartDate;
-    const end = ormawa.recruitmentEndDate;
+    const start = normalizeText(ormawa.recruitmentStartDate);
+    const end = normalizeText(ormawa.recruitmentEndDate);
     if (!start && !end) return null;
     if (start && end) return `${formatDate(start)} – ${formatDate(end)}`;
     if (start) return `Mulai ${formatDate(start)}`;
     return `Sampai ${formatDate(end)}`;
   };
 
-  const isRegistrationOpen = (ormawa: Ormawa) => {
-    if (!ormawa.registrationLink) return false;
+  const getRegistrationStatus = (ormawa: Ormawa): "open" | "comingSoon" | "closed" => {
+    if (ormawa.recruitmentStatus) return ormawa.recruitmentStatus;
+    if (!ormawa.registrationLink) return "closed";
+
     const start = ormawa.recruitmentStartDate ? new Date(ormawa.recruitmentStartDate) : null;
     const end = ormawa.recruitmentEndDate ? new Date(ormawa.recruitmentEndDate) : null;
     const now = new Date();
 
-    if (start && start > now) return false;
-    if (end && end < now) return false;
-    return true;
+    if (start && start > now) return "comingSoon";
+    if (end && end < now) return "closed";
+    return "open";
   };
+
+  const isRegistrationOpen = (ormawa: Ormawa) => getRegistrationStatus(ormawa) === "open";
+  const isRegistrationComingSoon = (ormawa: Ormawa) => getRegistrationStatus(ormawa) === "comingSoon";
 
   const themeVars = {
     "--bg": "#FAF9F4",
@@ -218,6 +230,7 @@ export default function ExplorePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {filteredOrmawa.map((ormawa, index) => {
               const typeStyle = TYPE_STYLE[ormawa.type] ?? DEFAULT_TYPE_STYLE;
+              const registrationStatus = getRegistrationStatus(ormawa);
 
               return (
                 <motion.div
@@ -272,7 +285,11 @@ export default function ExplorePage() {
                               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--orange)] opacity-60" />
                               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--orange)]" />
                             </span>
-                            {isRegistrationOpen(ormawa) ? "Pendaftaran dibuka" : "Pendaftaran ditutup"}
+                            {registrationStatus === "open"
+                              ? "Pendaftaran dibuka"
+                              : registrationStatus === "comingSoon"
+                                ? "Coming soon"
+                                : "Pendaftaran ditutup"}
                           </p>
                           <h4 className="mt-2 text-sm font-black leading-snug text-[var(--ink)]">
                             {getRecruitmentTitle(ormawa)}
@@ -338,7 +355,7 @@ export default function ExplorePage() {
                       </Link>
 
                       {ormawa.registrationLink && (
-                        isRegistrationOpen(ormawa) ? (
+                        registrationStatus === "open" ? (
                           <a
                             href={ormawa.registrationLink}
                             target="_blank"
@@ -348,6 +365,10 @@ export default function ExplorePage() {
                             Daftar
                             <ArrowUpRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
                           </a>
+                        ) : registrationStatus === "comingSoon" ? (
+                          <span className="inline-flex items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-soft)] cursor-not-allowed">
+                            Coming Soon
+                          </span>
                         ) : (
                           <span className="inline-flex items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-soft)] cursor-not-allowed">
                             Ditutup

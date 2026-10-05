@@ -117,14 +117,21 @@ export default function OrmawaDetailPage() {
   const hasPrograms = !!ormawa.flagshipPrograms?.length;
   const hasAchievements = !!ormawa.achievements?.length;
   const hasVideo = !!ormawa.video;
-  const recruitmentTitle = ormawa.recruitmentTitle || `Open Recruitment ${ormawa.shortName}`;
+  const normalizeText = (value?: string) => {
+    if (!value) return "";
+    const trimmed = value.trim();
+    return trimmed === "-" ? "" : trimmed;
+  };
+
+  const recruitmentTitle = normalizeText(ormawa.recruitmentTitle) || `Open Recruitment ${ormawa.shortName}`;
   const recruitmentDescription =
-    ormawa.recruitmentDescription ||
+    normalizeText(ormawa.recruitmentDescription) ||
     `Bergabunglah bersama ${ormawa.name} dan mulai perjalananmu dalam organisasi yang tepat untuk mengembangkan bakat, kemampuan, dan relasimu.`;
 
   const formatDate = (value?: string) => {
-    if (!value) return "-";
-    const date = new Date(value);
+    const safeValue = normalizeText(value);
+    if (!safeValue) return "-";
+    const date = new Date(safeValue);
     if (Number.isNaN(date.getTime())) return value;
     return new Intl.DateTimeFormat("id-ID", {
       day: "numeric",
@@ -134,27 +141,31 @@ export default function OrmawaDetailPage() {
   };
 
   const getRecruitmentPeriod = () => {
-    const start = ormawa.recruitmentStartDate;
-    const end = ormawa.recruitmentEndDate;
+    const start = normalizeText(ormawa.recruitmentStartDate);
+    const end = normalizeText(ormawa.recruitmentEndDate);
     if (!start && !end) return null;
     if (start && end) return `${formatDate(start)} – ${formatDate(end)}`;
     if (start) return `Mulai ${formatDate(start)}`;
     return `Sampai ${formatDate(end)}`;
   };
 
-  const isRegistrationOpen = () => {
-    if (!ormawa.registrationLink) return false;
+  const getRegistrationStatus = (): "open" | "comingSoon" | "closed" => {
+    if (ormawa.recruitmentStatus) return ormawa.recruitmentStatus;
+    if (!ormawa.registrationLink) return "closed";
+
     const start = ormawa.recruitmentStartDate ? new Date(ormawa.recruitmentStartDate) : null;
     const end = ormawa.recruitmentEndDate ? new Date(ormawa.recruitmentEndDate) : null;
     const now = new Date();
 
-    if (start && start > now) return false;
-    if (end && end < now) return false;
-    return true;
+    if (start && start > now) return "comingSoon";
+    if (end && end < now) return "closed";
+    return "open";
   };
 
   const recruitmentPeriod = getRecruitmentPeriod();
-  const registrationOpen = isRegistrationOpen();
+  const registrationStatus = getRegistrationStatus();
+  const registrationOpen = registrationStatus === "open";
+  const registrationComingSoon = registrationStatus === "comingSoon";
 
   // Fallback: kalau "gallery" kosong tapi ada data lama di "photos", tetap tampilkan.
   const galleryImages = ormawa.gallery?.length ? ormawa.gallery : ormawa.photos;
@@ -604,7 +615,7 @@ export default function OrmawaDetailPage() {
               ) : (
                 <div className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-bold text-white/75 relative z-10">
                   <FileText className="w-5 h-5" />
-                  Pendaftaran Ditutup
+                  {registrationComingSoon ? "Coming Soon" : "Pendaftaran Ditutup"}
                 </div>
               )}
             </motion.div>

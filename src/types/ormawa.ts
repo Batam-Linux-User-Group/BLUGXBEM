@@ -38,6 +38,7 @@ export interface Ormawa {
   recruitmentDescription?: string; // Deskripsi singkat kegiatan pendaftaran
   recruitmentStartDate?: string; // Tanggal mulai pendaftaran, format ISO YYYY-MM-DD
   recruitmentEndDate?: string; // Tanggal akhir pendaftaran, format ISO YYYY-MM-DD
+  recruitmentStatus?: "open" | "comingSoon" | "closed"; // Override status pendaftaran bila perlu
   departments?: string[];
 
   // Penilaian & Target
